@@ -42,12 +42,14 @@ function openExplore(mode){
   document.getElementById('exploreView').classList.remove('hidden');
   document.getElementById('detailSheet').classList.remove('expanded');
   const stage = document.getElementById('stage');
+  stage.classList.remove('zoomed');
+  stage.style.setProperty('--focus-x', '50%');
+  stage.style.setProperty('--focus-y', '45%');
   stage.classList.toggle('temple', item.type === 'temple');
   stage.dataset.mode = item.id;
   renderMarkers();
-  setCaption('공중 조망 중입니다. 전체 구조를 먼저 확인하세요.');
-  setTimeout(() => setCaption('입구로 이동합니다. 원하는 공간을 터치하세요.'), 900);
-  selectSpace(0);
+  setCaption('');
+  selectSpace(0, {intro:true});
   history.pushState({view:'explore'}, '', '#explore-' + mode);
 }
 
@@ -71,15 +73,21 @@ function renderMarkers(){
   });
 }
 
-function selectSpace(idx){
+function selectSpace(idx, opts={}){
   if (!currentSpaces.length) return;
   currentIndex = (idx + currentSpaces.length) % currentSpaces.length;
-  document.querySelectorAll('.marker').forEach((m,i)=>m.classList.toggle('active', i===currentIndex));
   const s = currentSpaces[currentIndex];
+  const stage = document.getElementById('stage');
+  stage.style.setProperty('--focus-x', s.x + '%');
+  stage.style.setProperty('--focus-y', s.y + '%');
+  stage.classList.add('zoomed');
+  document.querySelectorAll('.marker').forEach((m,i)=>m.classList.toggle('active', i===currentIndex));
   document.getElementById('detailTitle').textContent = `${s.icon} ${s.name}`;
   document.getElementById('detailDesc').textContent = s.desc;
-  setCaption(`${s.name} 탐험 중`);
-  document.getElementById('detailSheet').classList.add('expanded');
+  setCaption('');
+  // 처음 진입 시에도 입구로 살짝 줌인하되, 설명지는 접힌 상태로 둔다.
+  // 사용자가 마커/이전/다음으로 공간을 선택하면 배경을 가리지 않도록 미니 시트만 유지한다.
+  document.getElementById('detailSheet').classList.remove('expanded');
   renderTab();
 }
 
@@ -93,7 +101,14 @@ function renderTab(){
 function setCaption(text){ document.getElementById('stageCaption').textContent = text; }
 
 document.getElementById('backBtn').addEventListener('click', closeExplore);
-document.getElementById('droneBtn').addEventListener('click', () => setCaption('드론 뷰로 전체 구조를 다시 조망합니다.'));
+document.getElementById('droneBtn').addEventListener('click', () => {
+  const stage = document.getElementById('stage');
+  stage.classList.remove('zoomed');
+  stage.style.setProperty('--focus-x', '50%');
+  stage.style.setProperty('--focus-y', '45%');
+  document.getElementById('detailSheet').classList.remove('expanded');
+  setCaption('');
+});
 document.getElementById('prevSpace').addEventListener('click', () => selectSpace(currentIndex - 1));
 document.getElementById('nextSpace').addEventListener('click', () => selectSpace(currentIndex + 1));
 document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', () => {
@@ -115,7 +130,4 @@ if (sheetHandle) {
     document.getElementById('detailSheet').classList.toggle('expanded');
   });
 }
-document.getElementById('droneBtn').addEventListener('click', () => {
-  document.getElementById('detailSheet').classList.remove('expanded');
-  setCaption('드론 뷰로 전체 구조를 크게 봅니다. 하단 시트를 올리면 설명이 열립니다.');
-});
+

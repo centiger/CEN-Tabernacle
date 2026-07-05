@@ -188,3 +188,111 @@ html, body { height:100%; }
   .bottomSheet{max-height:42vh !important;}
   .stageCaption{bottom:calc(40vh + 12px) !important;}
 }
+
+
+/* v0.2.5 focused zoom UX: 선택한 공간을 확대하고 숫자/안내문은 숨김 */
+.stage{
+  --focus-x:50%;
+  --focus-y:45%;
+  transition:background-size .55s cubic-bezier(.2,.8,.2,1), background-position .55s cubic-bezier(.2,.8,.2,1), filter .35s ease !important;
+}
+.stage.zoomed{
+  background-size:190% auto !important;
+  background-position:var(--focus-x) var(--focus-y) !important;
+}
+.stageCaption{
+  display:none !important;
+}
+.entranceLabel,
+.routeLine{
+  display:none !important;
+}
+#markers{
+  transition:opacity .25s ease !important;
+}
+.stage.zoomed #markers .marker{
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+.stage.zoomed #markers .marker.active{
+  opacity:1 !important;
+  width:18px !important;
+  height:18px !important;
+  font-size:0 !important;
+  color:transparent !important;
+  background:#f2b51e !important;
+  border:3px solid #fff8e9 !important;
+  box-shadow:0 0 0 8px rgba(242,181,30,.25),0 8px 22px rgba(0,0,0,.36) !important;
+  transform:translate(-50%,-50%) scale(1) !important;
+  pointer-events:none !important;
+}
+.stage.zoomed #markers .marker.active::after{
+  content:"";
+  position:absolute;
+  left:50%; top:50%;
+  width:42px; height:42px;
+  transform:translate(-50%,-50%);
+  border-radius:999px;
+  border:1px solid rgba(255,248,233,.45);
+}
+.exploreHeader{
+  background:linear-gradient(180deg,rgba(0,0,0,.78),rgba(0,0,0,.32),rgba(0,0,0,0)) !important;
+  height:70px !important;
+}
+.stage{inset:70px 0 0 0 !important;}
+.bottomSheet{
+  min-height:112px !important;
+  max-height:52vh !important;
+  transform:translateY(calc(100% - 112px)) !important;
+  padding-top:14px !important;
+}
+.bottomSheet.expanded{
+  transform:translateY(0) !important;
+}
+.bottomSheet .handle{
+  margin-bottom:10px !important;
+}
+.bottomSheet h2{
+  font-size:26px !important;
+  margin-bottom:4px !important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.bottomSheet p{
+  font-size:15px !important;
+  line-height:1.35 !important;
+  margin-bottom:8px !important;
+  display:-webkit-box;
+  -webkit-line-clamp:1;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.bottomSheet.expanded p{
+  -webkit-line-clamp:unset;
+  display:block;
+}
+.bottomSheet:not(.expanded) .tabs,
+.bottomSheet:not(.expanded) .tabContent,
+.bottomSheet:not(.expanded) .navButtons{
+  display:none !important;
+}
+.bottomSheet::after{
+  content:"위로 올리면 상세 설명";
+  display:block;
+  font-size:12px;
+  color:#9a7a58;
+  margin-top:2px;
+}
+.bottomSheet.expanded::after{display:none;}
+#droneBtn::after{
+  content:"";
+}
+@media(max-width:760px){
+  .exploreHeader{height:72px !important; grid-template-columns:48px 1fr 48px !important; padding:14px 20px 8px !important;}
+  .stage{inset:72px 0 0 0 !important;}
+  .stage.zoomed{background-size:215% auto !important;}
+  .bottomSheet{min-height:118px !important; transform:translateY(calc(100% - 118px)) !important; padding-left:22px !important; padding-right:22px !important; border-radius:24px 24px 0 0 !important;}
+  .bottomSheet h2{font-size:28px !important;}
+  .bottomSheet p{font-size:16px !important;}
+}
