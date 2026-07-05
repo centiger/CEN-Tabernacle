@@ -3,16 +3,26 @@ const places=window.CEN_PLACES; const OVERVIEW=window.CEN_OVERVIEW; const $=id=>
 const st={idx:0,mode:'far',scale:1,x:0,y:0,tab:'summary',sheet:false,focus:false,pointers:new Map(),lastDist:0,lastCenter:null,lastTap:0,dragged:false};
 const el={intro:$('intro'),start:$('startBtn'),explorer:$('explorer'),stage:$('stage'),img:$('sceneImg'),labels:$('labels'),hint:$('hint'),home:$('homeBtn'),mini:$('miniBtn'),miniBox:$('miniMap'),miniClose:$('miniClose'),miniList:$('miniList'),prev:$('prevBtn'),next:$('nextBtn'),far:$('farBtn'),mid:$('midBtn'),near:$('nearBtn'),focus:$('focusBtn'),plus:$('plusBtn'),minus:$('minusBtn'),sheet:$('sheet'),handle:$('sheetHandle'),section:$('sectionText'),title:$('titleText'),placeIcon:$('placeIcon'),placeTitle:$('placeTitle'),placeOne:$('placeOne'),tabText:$('tabText'),path:$('pathBar')};
 const place=()=>places[st.idx]; const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function imageFor(){return st.mode==='far'?OVERVIEW:place().image;}
-function maxScale(){return st.mode==='far'?3.2:st.mode==='mid'?3.8:5.2;} 
+function imageFor(){return (st.mode==='far'||st.mode==='mid')?OVERVIEW:place().image;} // v1.0.4: 한걸음은 근접 사진이 아니라 넓은 전체 조망에서 접근
+function maxScale(){return st.mode==='far'?3.2:st.mode==='mid'?2.4:5.2;} 
 function minScale(){return 1;}
 function apply(anim=false){
   el.stage.classList.toggle('animate',anim);
   st.scale=clamp(st.scale,minScale(),maxScale());
-  const lx=(st.scale-1)*innerWidth*.54, ly=(st.scale-1)*innerHeight*.54;
+  let baseScale=1, baseX=0, baseY=0;
+  // v1.0.4: 한걸음 보기는 '상세 사진'이 아니라 넓은 드론뷰 안에서 선택 장소로 살짝 접근한다.
+  // 그래서 기본 배율을 1.45~1.65 수준으로 제한해, 번제단/물두멍이 화면을 독점하지 않게 한다.
+  if(st.mode==='mid'){
+    const p=place();
+    baseScale = innerWidth < 700 ? 1.48 : 1.38;
+    baseX = (50 - p.x) * innerWidth * 0.010;
+    baseY = (50 - p.y) * innerHeight * 0.010;
+  }
+  const totalScale=baseScale*st.scale;
+  const lx=(totalScale-1)*innerWidth*.54 + 80, ly=(totalScale-1)*innerHeight*.54 + 80;
   st.x=clamp(st.x,-lx,lx); st.y=clamp(st.y,-ly,ly);
-  el.img.style.transform=`translate(calc(-50% + ${st.x}px), calc(-50% + ${st.y}px)) scale(${st.scale})`;
-  el.stage.classList.toggle('ultra',st.scale>3.2);
+  el.img.style.transform=`translate(calc(-50% + ${baseX+st.x}px), calc(-50% + ${baseY+st.y}px)) scale(${totalScale})`;
+  el.stage.classList.toggle('ultra',totalScale>3.2);
   if(anim)setTimeout(()=>el.stage.classList.remove('animate'),580);
 }
 function setImage(){
@@ -23,7 +33,7 @@ function modeName(){return st.mode==='far'?'전체 조망':st.mode==='mid'?'한�
 function render(){
   const p=place();
   el.section.textContent=st.mode==='far'?'전체 조망':p.section;
-  el.title.textContent=st.mode==='far'?`${p.title} · 전체 속 위치`:st.mode==='mid'?`${p.title} · 한걸음 뒤`:p.title;
+  el.title.textContent=st.mode==='far'?`${p.title} · 전체 속 위치`:st.mode==='mid'?`${p.title} · 한걸음 보기`:p.title;
   el.placeIcon.textContent=p.icon; el.placeTitle.textContent=p.title; el.placeOne.textContent=p.one;
   renderLabels(); renderPath(); renderMini(); renderTab();
   el.prev.style.display=st.idx>0?'block':'none'; el.next.style.display=st.idx<places.length-1?'block':'none';
@@ -33,7 +43,7 @@ function render(){
 }
 function renderLabels(){
   el.labels.innerHTML=places.map((p,i)=>`<button class="label ${i===st.idx?'active':''}" data-i="${i}" style="left:${p.x}%;top:${p.y}%">${p.icon} ${p.title}${i===st.idx?`<small>${modeName()}</small>`:''}</button>`).join('');
-  el.labels.querySelectorAll('.label').forEach(b=>b.onclick=()=>goTo(+b.dataset.i, st.mode==='near'?'mid':'far', true));
+  el.labels.querySelectorAll('.label').forEach(b=>b.onclick=()=>{const i=+b.dataset.i; const nextMode=(st.mode==='far')?'mid':(st.mode==='mid'?'near':'mid'); goTo(i,nextMode,true)});
 }
 function renderPath(){
   el.path.innerHTML=places.map((p,i)=>`<button class="pathItem ${i===st.idx?'active':''}" data-i="${i}"><span class="ico">${p.icon}</span><span>${p.title.replace('언약궤와 ','')}</span></button>`).join('');
