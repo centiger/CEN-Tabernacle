@@ -53,6 +53,23 @@ h1{font-size:40px;line-height:1.08;margin:18px 0 13px;letter-spacing:-.07em}p{li
 .infoText{font-size:15px;line-height:1.65;color:#fffaf0;min-height:76px}.navBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.navBtns button{height:46px;border-radius:16px;background:rgba(255,255,255,.10);font-weight:900}.navBtns button:last-child{background:linear-gradient(180deg,#d6a23a,#9d6e21)}
 .zooming{pointer-events:none}.zooming .sceneBg{filter:saturate(1.08) contrast(1.05)}
 @media(max-width:760px){.cards{grid-template-columns:repeat(4,210px);min-width:880px}h1{font-size:38px}.homeList{max-height:45vh}.heroText{top:19%}.stage .sceneBg{background-position:center}}
+
+/* v0.5.1: softer user-centered navigation + detail zoom/pan */
+.detailBg{transition:transform .22s ease, background-position .22s ease; transform-origin:center center; touch-action:none; cursor:grab;}
+.detailBg.dragging{transition:none; cursor:grabbing;}
+.detailNav{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);z-index:72;display:flex;justify-content:space-between;pointer-events:none;padding:0 10px;}
+.detailNav button{pointer-events:auto;width:44px;height:64px;border-radius:22px;background:rgba(0,0,0,.34);border:1px solid rgba(255,220,132,.18);backdrop-filter:blur(8px);font-size:32px;color:#fff;opacity:.78;}
+.detailNav button:active{transform:scale(.96);background:rgba(214,162,58,.45)}
+.zoomPanel{position:absolute;right:12px;top:calc(78px + env(safe-area-inset-top));z-index:73;display:flex;flex-direction:column;gap:8px;}
+.zoomPanel button{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(8px);font-size:20px;font-weight:900;}
+.zoomBadge{width:44px;height:30px;border-radius:999px;background:rgba(0,0,0,.36);border:1px solid rgba(255,220,132,.16);display:flex;align-items:center;justify-content:center;font-size:11px;color:#f4dfab;backdrop-filter:blur(8px)}
+.sceneHint{position:absolute;left:50%;bottom:calc(210px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:72;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.12);font-size:12px;color:#efe2ca;backdrop-filter:blur(8px);white-space:nowrap;opacity:.88;}
+.detailThumbs{position:absolute;left:12px;right:12px;bottom:calc(132px + env(safe-area-inset-bottom));z-index:71;display:flex;gap:8px;overflow-x:auto;padding:4px 2px;scrollbar-width:none;}
+.detailThumbs::-webkit-scrollbar{display:none}.detailThumbs button{flex:0 0 70px;height:44px;border-radius:12px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.22);opacity:.72;position:relative;overflow:hidden}.detailThumbs button.active{opacity:1;outline:2px solid var(--gold)}.detailThumbs span{position:absolute;left:4px;right:4px;bottom:4px;font-size:10px;font-weight:900;text-shadow:0 1px 4px #000;}
+.infoSheet{transition:transform .28s ease;}
+.navBtns{display:none!important}
+@media(max-width:760px){.sceneHint{bottom:calc(225px + env(safe-area-inset-bottom));}.detailThumbs{bottom:calc(145px + env(safe-area-inset-bottom));}.zoomPanel{top:calc(76px + env(safe-area-inset-top));right:10px}.detailNav button{width:38px;height:56px;font-size:27px}.detailNav{padding:0 6px}}
+
 </style>
 </head>
 <body>
@@ -83,6 +100,10 @@ h1{font-size:40px;line-height:1.08;margin:18px 0 13px;letter-spacing:-.07em}p{li
 
 <section class="detail" id="detail">
   <div class="detailBg" id="detailBg"></div>
+  <div class="detailNav"><button onclick="prevDetail()" aria-label="이전 공간">‹</button><button onclick="nextDetail()" aria-label="다음 공간">›</button></div>
+  <div class="zoomPanel"><button onclick="zoomDetail(0.18)">＋</button><div class="zoomBadge" id="zoomBadge">100%</div><button onclick="zoomDetail(-0.18)">－</button><button onclick="resetDetailZoom()">⟳</button></div>
+  <div class="sceneHint" id="sceneHint">두 손가락 확대·드래그 이동 가능</div>
+  <div class="detailThumbs" id="detailThumbs"></div>
   <div class="detailHead"><button class="circle" onclick="backToStage()">‹</button><div class="num" id="detailNum">1</div><div class="detailName"><b id="detailTitle">입구</b><span id="detailSub">공간 상세 장면</span></div><button class="circle" onclick="toggleSheet()">⌄</button></div>
   <div class="infoSheet" id="sheet"><div class="tabs"><button class="tab active" onclick="setTab('overview')">개요</button><button class="tab" onclick="setTab('bible')">관련 성경</button><button class="tab" onclick="setTab('meaning')">예표와 의미</button></div><div class="infoText" id="infoText"></div><div class="navBtns"><button onclick="prevDetail()">‹ 이전 공간</button><button onclick="nextDetail()">다음 공간 ›</button></div></div>
 </section>
@@ -97,18 +118,31 @@ const items=[
  {id:'ark',num:5,title:'지성소',sub:'언약궤와 속죄소의 공간',img:IMG.ark,zoom:'scale(2) translate(-25%, -20%)',text:{overview:'지성소는 언약궤와 속죄소가 있는 가장 안쪽 공간입니다. 화면을 장면 전환으로 분리해 몰입감을 높였습니다.',bible:'출애굽기 25:10-22 — 언약궤와 속죄소 제작 규례입니다.',meaning:'하나님의 임재와 속죄의 중심을 보여주는 성막의 절정입니다.'}}
 ];
 let current=0, tab='overview', sheetOpen=true;
+let dZoom=1, dX=0, dY=0, dragging=false, dragStart=null, pinchStart=null;
 function openStage(){document.getElementById('stage').classList.add('show');renderFilm();resetView();}
 function closeStage(){document.getElementById('stage').classList.remove('show')}
 function resetView(){document.getElementById('stageBg').style.transform='scale(1)';}
 function renderFilm(){film.innerHTML=items.map((it,i)=>`<button class="thumb ${i===current?'active':''}" onclick="goDetail('${it.id}')" style="background-image:url('${it.img}')"><span>${it.title}</span></button>`).join('')}
 function goDetail(id){const i=items.findIndex(x=>x.id===id); if(i<0)return; current=i; const it=items[i]; document.getElementById('stage').classList.add('zooming'); document.getElementById('stageBg').style.transform=it.zoom; document.getElementById('stageGuide').textContent=it.title+' 장면으로 이동합니다.'; setTimeout(()=>{openDetail(i); document.getElementById('stage').classList.remove('zooming');},520)}
-function openDetail(i){current=i;tab='overview';sheetOpen=true; const it=items[i]; detail.classList.add('show'); detailBg.style.backgroundImage=`url('${it.img}')`; detailNum.textContent=it.num; detailTitle.textContent=it.title; detailSub.textContent=it.sub; sheet.style.transform='translateY(0)'; setTab('overview'); renderFilm();}
+function openDetail(i){current=i;tab='overview';sheetOpen=true; const it=items[i]; detail.classList.add('show'); detailBg.style.backgroundImage=`url('${it.img}')`; detailNum.textContent=it.num; detailTitle.textContent=it.title; detailSub.textContent=it.sub; sheet.style.transform='translateY(0)'; resetDetailZoom(false); setTab('overview'); renderFilm(); renderDetailThumbs(); flashHint();}
+function renderDetailThumbs(){detailThumbs.innerHTML=items.map((it,i)=>`<button class="${i===current?'active':''}" onclick="openDetail(${i})" style="background-image:url('${it.img}')"><span>${it.title}</span></button>`).join('')}
+function applyDetailTransform(){detailBg.style.transform=`translate(${dX}px,${dY}px) scale(${dZoom})`; zoomBadge.textContent=Math.round(dZoom*100)+'%';}
+function zoomDetail(delta){dZoom=Math.max(1,Math.min(2.8,dZoom+delta)); if(dZoom===1){dX=0;dY=0} applyDetailTransform();}
+function resetDetailZoom(animate=true){dZoom=1;dX=0;dY=0; if(!animate){detailBg.style.transition='none'; applyDetailTransform(); requestAnimationFrame(()=>detailBg.style.transition='transform .22s ease, background-position .22s ease')} else applyDetailTransform();}
+function flashHint(){sceneHint.style.opacity='.95'; setTimeout(()=>sceneHint.style.opacity='.25',2200)}
 function backToStage(){detail.classList.remove('show');stageGuide.textContent='원하는 공간을 터치하면 장면이 확대됩니다.';resetView()}
 function setTab(t){tab=t; document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active')); [...document.querySelectorAll('.tab')].find(b=>b.textContent.includes(t==='overview'?'개요':t==='bible'?'성경':'의미')).classList.add('active'); infoText.textContent=items[current].text[t];}
 function nextDetail(){openDetail((current+1)%items.length)}
 function prevDetail(){openDetail((current-1+items.length)%items.length)}
 function toggleSheet(){sheetOpen=!sheetOpen; sheet.style.transform=sheetOpen?'translateY(0)':'translateY(calc(100% - 74px))';}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',1800)}
+
+function getDist(touches){const a=touches[0],b=touches[1];return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)}
+detailBg.addEventListener('touchstart',e=>{if(!detail.classList.contains('show'))return; if(e.touches.length===1){dragging=true;dragStart={x:e.touches[0].clientX-dX,y:e.touches[0].clientY-dY};detailBg.classList.add('dragging')} if(e.touches.length===2){pinchStart={dist:getDist(e.touches),zoom:dZoom};}}, {passive:false});
+detailBg.addEventListener('touchmove',e=>{if(!detail.classList.contains('show'))return; if(e.touches.length===2 && pinchStart){e.preventDefault(); dZoom=Math.max(1,Math.min(2.8,pinchStart.zoom*(getDist(e.touches)/pinchStart.dist))); applyDetailTransform(); return;} if(e.touches.length===1 && dragging && dZoom>1){e.preventDefault(); dX=e.touches[0].clientX-dragStart.x; dY=e.touches[0].clientY-dragStart.y; applyDetailTransform();}}, {passive:false});
+detailBg.addEventListener('touchend',()=>{dragging=false;pinchStart=null;detailBg.classList.remove('dragging'); if(dZoom<=1.01){resetDetailZoom()}}, {passive:true});
+let lastTap=0; detailBg.addEventListener('click',()=>{const now=Date.now(); if(now-lastTap<320){dZoom=dZoom>1?1:1.85;dX=0;dY=0;applyDetailTransform()} lastTap=now;});
+
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
 </script>
 </body></html>
