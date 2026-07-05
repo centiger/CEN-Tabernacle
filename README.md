@@ -1,18 +1,18 @@
-# CEN Tabernacle v1.0.0
+# CEN Tabernacle v1.0.1
 
-Explorer Engine 기반 정식 1차 버전.
+이미지 경로 보정판입니다.
 
-## 핵심 기능
-- 이미지 중심 성막 탐험
-- 전체 조망 / 근접 보기
-- 두 손가락 핀치 줌인·줌아웃
-- 확대 상태 드래그 이동
-- 더블탭 확대/축소
-- 장소 라벨, 미니맵, 이전/다음 이동
-- 예배 동선 진행바
-- 뒤로가기: 상세/미니맵 → 드론뷰 → 시작화면
-- 소리 없음
-- PWA 설치 및 오프라인 캐시
+## 수정 사항
+- `scene/` 폴더 포함
+- 모든 장면 이미지 경로를 `scene/scene-*.jpg`로 통일
+- service worker 캐시도 `scene/` 기준으로 갱신
+- GitHub Pages 업로드 시 루트에 그대로 올리면 동작
 
-## 업로드
-GitHub Pages 루트에 전체 파일을 업로드하세요.
+## 포함 이미지
+- scene/scene-overview.jpg
+- scene/scene-altar.jpg
+- scene/scene-laver.jpg
+- scene/scene-sanctuary.jpg
+- scene/scene-ark.jpg
+
+업로드 후 기존 PWA 캐시가 남아 있으면 앱 삭제 후 재설치하세요.
