@@ -1,16 +1,16 @@
-# CEN Tabernacle
+# CEN Tabernacle v0.2.0
 
-성막과 성전을 탐험하는 독립 PWA 기초 버전입니다.
+성막·성전 공간 탐험 PWA 기초 버전입니다.
 
-## v0.1.0
-- 설치 가능한 PWA
-- manifest / service worker 포함
-- 드론뷰 홈 화면
-- 성막 / 솔로몬 성전 / 스룹바벨 성전 / 헤롯 성전 메뉴
-- 공간 터치 탐험
-- 관련 성경 / 예표와 의미 탭
-- 모바일 최적화
+## v0.2.0 변경점
+- 실제 이미지 기반 드론뷰 홈 적용
+- 성막/성전 카드 이미지형 메뉴 적용
+- 탐험 화면 배경 이미지 적용
+- 마커 활성 표시 추가
+- service worker 캐시 이미지 포함
 
-## GitHub 업로드
-레포지터리 이름: CEN-Tabernacle
-압축을 풀어 루트 파일 그대로 업로드하세요.
+## 업로드
+GitHub Pages 루트에 전체 파일을 업로드하면 됩니다.
+
+접속 주소 예시:
+https://centiger.github.io/CEN-Tabernacle/

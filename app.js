@@ -25,6 +25,7 @@ function renderMenu(){
   data.menu.forEach(item => {
     const card = document.createElement('article');
     card.className = 'card';
+    card.dataset.mode = item.id;
     card.innerHTML = `<div class="thumb"></div><div class="cardBody"><div class="icon">${item.icon}</div><div><h3>${item.title}</h3><p>${item.subtitle}</p></div><button class="arrow">›</button></div>`;
     card.addEventListener('click', () => openExplore(item.id));
     (item.group === '성막' ? tab : temples).appendChild(card);
@@ -39,7 +40,9 @@ function openExplore(mode){
   document.getElementById('viewTitle').textContent = item.title;
   document.getElementById('viewSub').textContent = item.group + ' 공간 탐험';
   document.getElementById('exploreView').classList.remove('hidden');
-  document.getElementById('stage').classList.toggle('temple', item.type === 'temple');
+  const stage = document.getElementById('stage');
+  stage.classList.toggle('temple', item.type === 'temple');
+  stage.dataset.mode = item.id;
   renderMarkers();
   setCaption('공중 조망 중입니다. 전체 구조를 먼저 확인하세요.');
   setTimeout(() => setCaption('입구로 이동합니다. 원하는 공간을 터치하세요.'), 900);
@@ -70,6 +73,7 @@ function renderMarkers(){
 function selectSpace(idx){
   if (!currentSpaces.length) return;
   currentIndex = (idx + currentSpaces.length) % currentSpaces.length;
+  document.querySelectorAll('.marker').forEach((m,i)=>m.classList.toggle('active', i===currentIndex));
   const s = currentSpaces[currentIndex];
   document.getElementById('detailTitle').textContent = `${s.icon} ${s.name}`;
   document.getElementById('detailDesc').textContent = s.desc;
