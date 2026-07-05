@@ -61,3 +61,130 @@ button{font:inherit;border:0;cursor:pointer} .hidden{display:none!important}
 .hero::before{background:linear-gradient(90deg,rgba(0,0,0,.42) 0%,rgba(0,0,0,.20) 44%,rgba(0,0,0,.02) 100%),linear-gradient(180deg,rgba(0,0,0,.02),rgba(0,0,0,.30)) !important;}
 .hero::after{height:80px !important;background:linear-gradient(0deg,#100c08 0%,rgba(16,12,8,0)) !important;}
 .card::before,.stage{opacity:1 !important;}
+
+
+/* v0.2.4 cinematic ratio + bottom-sheet UX fix */
+html, body { height:100%; }
+.hero{
+  min-height:72vh !important;
+  background-position:58% center !important;
+  background-size:cover !important;
+}
+.hero::before{
+  background:linear-gradient(90deg,rgba(0,0,0,.50) 0%,rgba(0,0,0,.20) 45%,rgba(0,0,0,.02) 100%),
+             linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.20) 65%,rgba(16,12,8,.85) 100%) !important;
+}
+.heroText{padding-top:52px !important; padding-bottom:126px !important;}
+.heroText h2{max-width:430px !important;}
+.heroText p{max-width:430px !important;}
+.section{padding-top:24px !important;}
+.cards{display:flex !important; overflow-x:auto !important; gap:14px !important; scroll-snap-type:x mandatory !important; padding-bottom:12px !important;}
+.cards::-webkit-scrollbar{display:none;}
+.card{flex:0 0 min(78vw,340px) !important; min-height:260px !important; scroll-snap-align:start !important;}
+
+.explore{
+  display:block !important;
+  overflow:hidden !important;
+  background:#080604 !important;
+}
+.explore.hidden{display:none !important;}
+.exploreHeader{
+  position:absolute !important;
+  top:0; left:0; right:0;
+  height:76px !important;
+  z-index:10 !important;
+  background:linear-gradient(180deg,rgba(0,0,0,.86),rgba(0,0,0,.62)) !important;
+}
+.stage{
+  position:absolute !important;
+  inset:76px 0 0 0 !important;
+  height:auto !important;
+  min-height:0 !important;
+  flex:none !important;
+  background-size:cover !important;
+  background-position:center 38% !important;
+  overflow:hidden !important;
+}
+.stage::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  background:linear-gradient(180deg,rgba(0,0,0,.00) 0%,rgba(0,0,0,.04) 48%,rgba(0,0,0,.44) 100%),
+             radial-gradient(circle at 58% 35%,rgba(255,220,150,.18),transparent 26%) !important;
+  z-index:1 !important;
+  pointer-events:none !important;
+}
+.stageOverlay{opacity:.08 !important;}
+.routeLine{z-index:2 !important; opacity:.9 !important;}
+.entranceLabel{z-index:3 !important;}
+#markers{position:absolute; inset:0; z-index:4 !important;}
+.marker{z-index:4 !important; box-shadow:0 6px 20px rgba(0,0,0,.28) !important;}
+.marker.active{z-index:5 !important; transform:translate(-50%,-50%) scale(1.16) !important;}
+.stageCaption{
+  z-index:7 !important;
+  left:24px !important;
+  right:24px !important;
+  bottom:calc(34vh + 18px) !important;
+  max-width:680px !important;
+  margin:0 auto !important;
+  background:rgba(24,16,9,.74) !important;
+  backdrop-filter:blur(12px) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:999px !important;
+  padding:13px 18px !important;
+}
+.bottomSheet{
+  position:absolute !important;
+  left:0 !important; right:0 !important; bottom:0 !important;
+  z-index:8 !important;
+  max-height:36vh !important;
+  min-height:150px !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  border-radius:30px 30px 0 0 !important;
+  transform:translateY(calc(100% - 152px)) !important;
+  transition:transform .34s cubic-bezier(.2,.8,.2,1), max-height .34s ease !important;
+  box-shadow:0 -12px 32px rgba(0,0,0,.22) !important;
+}
+.bottomSheet.expanded{
+  transform:translateY(0) !important;
+}
+.bottomSheet .handle{
+  width:64px !important;
+  height:6px !important;
+  margin:0 auto 16px !important;
+  border-radius:999px !important;
+  background:#d8cabc !important;
+  cursor:pointer !important;
+}
+.bottomSheet h2{font-size:30px !important; margin:0 0 8px !important;}
+.bottomSheet p{font-size:17px !important; line-height:1.45 !important; margin:0 0 14px !important;}
+.tabs{gap:8px !important;}
+.tabs button{min-height:44px !important; border-radius:999px !important; font-size:15px !important;}
+.tabContent{font-size:16px !important; line-height:1.6 !important; padding-bottom:8px !important;}
+.navButtons{padding-bottom:env(safe-area-inset-bottom) !important;}
+.navButtons button{min-height:48px !important; border-radius:999px !important;}
+
+@media(max-width:760px){
+  .topbar{padding:28px 28px 8px !important;}
+  .topbar h1{font-size:32px !important;}
+  .topbar p{font-size:16px !important;}
+  .hero{min-height:74vh !important; background-position:61% center !important;}
+  .heroText{padding:122px 28px 130px !important;}
+  .heroText h2{font-size:36px !important; line-height:1.18 !important;}
+  .heroText p{font-size:18px !important; line-height:1.7 !important;}
+  .scrollCue{bottom:26px !important;}
+  .exploreHeader{height:82px !important; grid-template-columns:54px 1fr 54px !important;}
+  .stage{inset:82px 0 0 0 !important; background-position:center top !important;}
+  .stageCaption{bottom:calc(36vh + 16px) !important; left:20px !important; right:20px !important; font-size:16px !important;}
+  .bottomSheet{max-height:38vh !important; transform:translateY(calc(100% - 162px)) !important; padding-left:24px !important; padding-right:24px !important;}
+  .bottomSheet.expanded{transform:translateY(0) !important;}
+  .bottomSheet h2{font-size:32px !important;}
+  .tabs button{font-size:14px !important; padding-left:10px !important; padding-right:10px !important;}
+}
+
+@media(max-height:720px){
+  .bottomSheet{max-height:42vh !important;}
+  .stageCaption{bottom:calc(40vh + 12px) !important;}
+}

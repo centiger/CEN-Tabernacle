@@ -40,6 +40,7 @@ function openExplore(mode){
   document.getElementById('viewTitle').textContent = item.title;
   document.getElementById('viewSub').textContent = item.group + ' 공간 탐험';
   document.getElementById('exploreView').classList.remove('hidden');
+  document.getElementById('detailSheet').classList.remove('expanded');
   const stage = document.getElementById('stage');
   stage.classList.toggle('temple', item.type === 'temple');
   stage.dataset.mode = item.id;
@@ -78,6 +79,7 @@ function selectSpace(idx){
   document.getElementById('detailTitle').textContent = `${s.icon} ${s.name}`;
   document.getElementById('detailDesc').textContent = s.desc;
   setCaption(`${s.name} 탐험 중`);
+  document.getElementById('detailSheet').classList.add('expanded');
   renderTab();
 }
 
@@ -104,3 +106,16 @@ window.addEventListener('popstate', () => { if(!location.hash.startsWith('#explo
 
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
 renderMenu();
+
+
+// v0.2.4: bottom sheet can be folded to keep the drone image wide.
+const sheetHandle = document.querySelector('#detailSheet .handle');
+if (sheetHandle) {
+  sheetHandle.addEventListener('click', () => {
+    document.getElementById('detailSheet').classList.toggle('expanded');
+  });
+}
+document.getElementById('droneBtn').addEventListener('click', () => {
+  document.getElementById('detailSheet').classList.remove('expanded');
+  setCaption('드론 뷰로 전체 구조를 크게 봅니다. 하단 시트를 올리면 설명이 열립니다.');
+});
