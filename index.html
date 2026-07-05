@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>CEN Tabernacle</title>
-<meta name="theme-color" content="#100b07">
+<meta name="theme-color" content="#090604">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,36 +21,58 @@
       <button id="startBtn">탐험 시작</button>
     </div>
   </section>
-  <main id="explorer" class="explorer hidden">
-    <div id="stage" class="stage">
+
+  <main id="explorer" class="explorer hidden ui-on">
+    <div id="stage" class="stage far">
       <img id="sceneImg" alt="성막 탐험 장면" draggable="false">
       <div class="shade"></div>
       <div id="labels" class="labels"></div>
-      <div id="hint" class="hint"></div>
+      <div id="sceneHint" class="sceneHint">화면을 터치하면 메뉴가 나타납니다</div>
     </div>
-    <header class="topbar">
-      <button id="homeBtn" class="topBtn">전체보기</button>
-      <div class="titleBox"><span id="sectionText">드론뷰</span><b id="titleText">성막 전체</b></div>
-      <button id="miniBtn" class="topBtn">미니맵</button>
+
+    <header id="topbar" class="topbar chrome">
+      <button id="homeBtn" class="roundBtn">전체보기</button>
+      <div class="titleBox">
+        <span id="sectionText">드론뷰</span>
+        <b id="titleText">성막 전체</b>
+      </div>
+      <button id="miniBtn" class="roundBtn">미니맵</button>
     </header>
-    <button id="prevBtn" class="sideBtn left">‹</button>
-    <button id="nextBtn" class="sideBtn right">›</button>
-    <div class="viewBtns">
-      <button id="farBtn">멀리</button>
-      <button id="midBtn">한걸음</button>
-      <button id="nearBtn">근접</button>
-      <button id="focusBtn">시야</button>
-      <button id="plusBtn">＋</button>
-      <button id="minusBtn">－</button>
+
+    <button id="prevBtn" class="navArrow left chrome">‹</button>
+    <button id="nextBtn" class="navArrow right chrome">›</button>
+
+    <div id="quickTools" class="quickTools chrome collapsed">
+      <button id="toolToggle" class="toolMain">🔍</button>
+      <div class="toolStack">
+        <button id="farBtn">전체</button>
+        <button id="midBtn">한걸음</button>
+        <button id="nearBtn">근접</button>
+        <button id="plusBtn">＋</button>
+        <button id="minusBtn">－</button>
+      </div>
     </div>
+
     <aside id="sheet" class="sheet collapsed">
       <button id="sheetHandle" class="handle"><span></span></button>
-      <div class="sheetHead"><div id="placeIcon" class="placeIcon">🏕️</div><div><h1 id="placeTitle">성막 전체</h1><p id="placeOne">전체 구조를 먼저 조망합니다.</p></div></div>
-      <div class="tabs"><button class="tab active" data-tab="summary">개요</button><button class="tab" data-tab="bible">성경</button><button class="tab" data-tab="meaning">의미</button></div>
+      <div class="sheetMini">
+        <div id="placeIcon" class="placeIcon">🏕️</div>
+        <div><h1 id="placeTitle">성막 전체</h1><p id="placeOne">전체 구조를 먼저 조망합니다.</p></div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="summary">개요</button>
+        <button class="tab" data-tab="bible">성경</button>
+        <button class="tab" data-tab="meaning">의미</button>
+      </div>
       <div id="tabText" class="tabText"></div>
     </aside>
-    <nav id="pathBar" class="pathBar"></nav>
-    <div id="miniMap" class="mini hidden"><div class="miniTop"><b>성막 동선</b><button id="miniClose">×</button></div><div id="miniList"></div></div>
+
+    <nav id="pathBar" class="pathBar chrome"></nav>
+
+    <div id="miniMap" class="mini hidden">
+      <div class="miniTop"><b>성막 동선</b><button id="miniClose">×</button></div>
+      <div id="miniList"></div>
+    </div>
   </main>
 </div>
 <script src="data/scenes.js"></script>
