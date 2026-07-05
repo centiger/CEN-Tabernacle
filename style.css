@@ -296,3 +296,74 @@ html, body { height:100%; }
   .bottomSheet h2{font-size:28px !important;}
   .bottomSheet p{font-size:16px !important;}
 }
+
+
+/* v0.3.0 cinematic enter + interior exploration */
+.stage.entering{
+  animation:cenFlyIn .68s cubic-bezier(.16,.84,.24,1) both !important;
+}
+@keyframes cenFlyIn{
+  0%{filter:saturate(.95) contrast(.95); transform:scale(1)}
+  55%{filter:saturate(1.08) contrast(1.05); transform:scale(1.018)}
+  100%{filter:saturate(1) contrast(1); transform:scale(1)}
+}
+.tapHint{
+  position:absolute; left:50%; bottom:126px; z-index:7;
+  transform:translateX(-50%);
+  background:rgba(15,10,6,.58); color:#fff8e8;
+  border:1px solid rgba(255,255,255,.14); border-radius:999px;
+  padding:9px 14px; font-size:13px; font-weight:800;
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  pointer-events:none; opacity:.86;
+}
+.stage.zoomed .tapHint{animation:hintFade .9s ease forwards;}
+@keyframes hintFade{0%,55%{opacity:.9}100%{opacity:0}}
+.interiorScene{
+  position:absolute; inset:0; z-index:6; opacity:0; pointer-events:none;
+  transform:scale(1.06); transition:opacity .38s ease, transform .5s cubic-bezier(.2,.8,.2,1);
+  overflow:hidden;
+}
+.stage.interior .interiorScene{opacity:1; transform:scale(1); pointer-events:auto;}
+.stage.interior::after{
+  content:""; position:absolute; inset:0; z-index:5; pointer-events:none;
+  background:radial-gradient(circle at 50% 36%,rgba(255,213,124,.20),rgba(48,29,12,.38) 42%,rgba(7,4,2,.72) 100%);
+}
+.interiorScene::before{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg,rgba(45,27,12,.22),rgba(3,2,1,.28)),
+             repeating-linear-gradient(90deg,rgba(120,74,32,.18) 0 36px,rgba(255,218,156,.06) 36px 39px);
+}
+.stage.holyRoom .interiorScene::before{
+  background:linear-gradient(180deg,rgba(78,42,13,.34),rgba(15,7,2,.38)),
+             repeating-linear-gradient(90deg,rgba(92,48,14,.42) 0 42px,rgba(235,177,78,.10) 42px 48px);
+}
+.roomGlow{position:absolute; left:50%; top:30%; width:62vw; height:42vw; max-height:360px; transform:translate(-50%,-50%); background:radial-gradient(circle,rgba(255,214,108,.36),transparent 60%); filter:blur(6px);}
+.curtain.back{position:absolute; left:16%; right:16%; top:11%; height:44%; border-radius:0 0 28px 28px; background:repeating-linear-gradient(90deg,#532313 0 24px,#7b331c 24px 42px,#b8893f 42px 47px); box-shadow:0 18px 40px rgba(0,0,0,.38); opacity:.94;}
+.floorLines{position:absolute; left:-10%; right:-10%; bottom:-18%; height:42%; background:repeating-linear-gradient(100deg,rgba(255,214,132,.14) 0 2px,transparent 2px 38px); transform:perspective(400px) rotateX(54deg); opacity:.75;}
+.furn{position:absolute; z-index:3; min-width:74px; min-height:74px; border-radius:22px; background:linear-gradient(145deg,#f6c54e,#8e5a15); color:#261300; border:2px solid rgba(255,238,178,.86); box-shadow:0 14px 34px rgba(0,0,0,.42),0 0 34px rgba(247,187,59,.20); font-size:34px; font-weight:900; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; animation:furnPop .54s cubic-bezier(.2,.9,.2,1) both;}
+.furn span{font-size:11px; color:#fff7df; text-shadow:0 1px 3px rgba(0,0,0,.55); white-space:nowrap;}
+.furn.active{transform:scale(1.08)!important; box-shadow:0 16px 40px rgba(0,0,0,.48),0 0 0 9px rgba(247,187,59,.20),0 0 42px rgba(255,210,82,.42);}
+.furn.lamp{left:13%; top:43%; animation-delay:.08s}.furn.table{right:13%; top:46%; animation-delay:.18s}.furn.incense{left:50%; top:32%; transform:translateX(-50%); animation-delay:.28s}
+@keyframes furnPop{from{opacity:0; transform:translateY(28px) scale(.82)}to{opacity:1; transform:translateY(0) scale(1)}}
+.furn.incense{transform:translateX(-50%)}
+.veilCurtain{position:absolute; inset:9% 13% 16%; display:flex; gap:4px; justify-content:center; perspective:600px;}
+.veilCurtain span{flex:1; border-radius:20px 20px 32px 32px; background:linear-gradient(90deg,#472074,#7d3f9d,#c08c43,#7d3f9d,#472074); box-shadow:inset 0 0 28px rgba(0,0,0,.35),0 20px 40px rgba(0,0,0,.35); animation:curtainWave 1.8s ease-in-out infinite alternate;}
+.veilCurtain span:nth-child(2){animation-delay:.25s}.veilCurtain span:nth-child(3){animation-delay:.5s}
+@keyframes curtainWave{from{transform:rotateY(-4deg)}to{transform:rotateY(4deg)}}
+.veilText{position:absolute; left:50%; bottom:18%; transform:translateX(-50%); color:#fff4d0; font-size:20px; font-weight:900; text-shadow:0 4px 16px rgba(0,0,0,.8); white-space:nowrap;}
+.arkBox{position:absolute; left:50%; top:45%; width:240px; max-width:70vw; height:128px; transform:translate(-50%,-50%); border-radius:22px; background:linear-gradient(145deg,#f0bf4e,#9b681c 55%,#51300d); border:3px solid #ffe2a1; box-shadow:0 20px 60px rgba(0,0,0,.55),0 0 80px rgba(255,216,99,.28); display:flex; align-items:center; justify-content:space-around; color:#2b1700; font-weight:900; animation:arkRise .7s cubic-bezier(.2,.9,.2,1) both;}
+.arkBox .mercy{position:absolute; top:-20px; left:18%; right:18%; height:22px; border-radius:999px; background:#ffe3a1; display:flex; align-items:center; justify-content:center; font-size:12px; color:#3b2103; box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.cherub{font-size:42px; opacity:.86}.cherub.right{transform:scaleX(-1)}
+.shekinah{position:absolute; left:50%; top:24%; width:38vw; height:38vw; max-width:260px; max-height:260px; transform:translate(-50%,-50%); background:radial-gradient(circle,rgba(255,255,224,.72),rgba(255,210,91,.22) 36%,transparent 68%); filter:blur(2px); animation:pulseGlow 1.7s ease-in-out infinite alternate;}
+@keyframes pulseGlow{from{opacity:.55; transform:translate(-50%,-50%) scale(.92)}to{opacity:1; transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes arkRise{from{opacity:0; transform:translate(-50%,-36%) scale(.82)}to{opacity:1; transform:translate(-50%,-50%) scale(1)}}
+.stage.interior #markers .marker{display:none!important;}
+.stage.interior .stageOverlay{opacity:0!important;}
+.stage.interior + .bottomSheet, .bottomSheet.expanded{background:rgba(255,250,243,.96)!important;}
+@media(max-width:760px){
+  .stage.interior{background-size:cover!important; background-position:center!important;}
+  .furn{min-width:68px; min-height:68px; font-size:30px; border-radius:20px;}
+  .furn.lamp{left:9%; top:43%}.furn.table{right:8%; top:46%}.furn.incense{top:30%}
+  .tapHint{bottom:122px; font-size:12px; max-width:86vw; text-align:center;}
+  .bottomSheet.expanded{max-height:46vh!important;}
+}

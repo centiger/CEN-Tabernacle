@@ -7,7 +7,7 @@
   <title>CEN Tabernacle</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="preload" href="assets/images/hero-tabernacle.jpg" as="image" />
-  <link rel="stylesheet" href="style.css?v=0.2.5" />
+  <link rel="stylesheet" href="style.css?v=0.3.0" />
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
 </head>
 <body>
@@ -73,6 +73,8 @@
       <div class="routeLine"></div>
       <div class="entranceLabel">입구</div>
       <div id="markers"></div>
+      <div id="interiorScene" class="interiorScene" aria-hidden="true"></div>
+      <div class="tapHint" id="tapHint">공간을 터치하면 안쪽으로 들어갑니다</div>
       <div class="stageCaption" id="stageCaption">공중 조망 중입니다.</div>
     </div>
     <div class="bottomSheet" id="detailSheet">
@@ -92,7 +94,7 @@
     </div>
   </div>
 
-  <script src="db/data.js?v=0.2.5"></script>
-  <script src="app.js?v=0.2.5"></script>
+  <script src="db/data.js?v=0.3.0"></script>
+  <script src="app.js?v=0.3.0"></script>
 </body>
 </html>
