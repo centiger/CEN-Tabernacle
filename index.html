@@ -1,85 +1,58 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>CEN Tabernacle</title>
-<meta name="theme-color" content="#16110c" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<link rel="manifest" href="manifest.json" />
-<link rel="stylesheet" href="style.css" />
+<meta name="theme-color" content="#100b07">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="app" class="app intro">
-  <section id="splash" class="splash">
-    <div class="splashShade"></div>
-    <div class="splashTitle">
+<div id="app">
+  <section id="intro" class="intro">
+    <div class="introBg"></div>
+    <div class="introText">
       <div class="brand">CEN Tabernacle</div>
-      <div class="sub">성막 탐험</div>
+      <div class="tag">성막과 성전을 탐험하는 공간 경험</div>
       <button id="startBtn">탐험 시작</button>
     </div>
   </section>
-
-  <main id="explorer" class="explorer hidden" aria-label="성막 탐험 화면">
-    <div id="viewport" class="viewport">
-      <img id="sceneImg" alt="성막 장면" draggable="false" />
-      <div id="sceneVignette"></div>
-      <div id="hotspots"></div>
-      <div id="sceneToast" class="sceneToast hidden"></div>
+  <main id="explorer" class="explorer hidden">
+    <div id="stage" class="stage">
+      <img id="sceneImg" alt="성막 탐험 장면" draggable="false">
+      <div class="shade"></div>
+      <div id="labels" class="labels"></div>
+      <div id="hint" class="hint"></div>
     </div>
-
-    <header class="topHud">
-      <button id="homeBtn" class="hudBtn">전체보기</button>
-      <div class="crumb">
-        <span id="sectionLabel">성막</span>
-        <b id="placeLabel">전체 조망</b>
-      </div>
-      <button id="miniBtn" class="hudBtn">미니맵</button>
+    <header class="topbar">
+      <button id="homeBtn" class="topBtn">전체보기</button>
+      <div class="titleBox"><span id="sectionText">드론뷰</span><b id="titleText">성막 전체</b></div>
+      <button id="miniBtn" class="topBtn">미니맵</button>
     </header>
-
-    <button id="prevBtn" class="floatNav left">‹</button>
-    <button id="nextBtn" class="floatNav right">›</button>
-
-    <div id="zoomControls" class="zoomControls">
+    <button id="prevBtn" class="sideBtn left">‹</button>
+    <button id="nextBtn" class="sideBtn right">›</button>
+    <div class="viewBtns">
       <button id="farBtn">멀리</button>
       <button id="nearBtn">근접</button>
       <button id="plusBtn">＋</button>
       <button id="minusBtn">－</button>
     </div>
-
-    <aside id="infoSheet" class="infoSheet compact">
-      <button id="sheetHandle" class="sheetHandle"><span></span></button>
-      <div class="infoHead">
-        <div id="infoIcon" class="infoIcon">🏕️</div>
-        <div>
-          <h1 id="infoTitle">성막 전체</h1>
-          <p id="infoOne">광야 가운데 세워진 하나님의 임재와 예배의 공간</p>
-        </div>
-      </div>
-      <div class="infoBody">
-        <div class="pillRow">
-          <button data-tab="summary" class="tabBtn active">개요</button>
-          <button data-tab="bible" class="tabBtn">성경</button>
-          <button data-tab="meaning" class="tabBtn">의미</button>
-        </div>
-        <div id="tabContent" class="tabContent"></div>
-      </div>
+    <aside id="sheet" class="sheet collapsed">
+      <button id="sheetHandle" class="handle"><span></span></button>
+      <div class="sheetHead"><div id="placeIcon" class="placeIcon">🏕️</div><div><h1 id="placeTitle">성막 전체</h1><p id="placeOne">전체 구조를 먼저 조망합니다.</p></div></div>
+      <div class="tabs"><button class="tab active" data-tab="summary">개요</button><button class="tab" data-tab="bible">성경</button><button class="tab" data-tab="meaning">의미</button></div>
+      <div id="tabText" class="tabText"></div>
     </aside>
-
-    <nav id="journeyBar" class="journeyBar"></nav>
-
-    <div id="miniMap" class="miniMap hidden">
-      <div class="miniHead"><b>성막 미니맵</b><button id="miniClose">×</button></div>
-      <div id="miniItems" class="miniItems"></div>
-    </div>
+    <nav id="pathBar" class="pathBar"></nav>
+    <div id="miniMap" class="mini hidden"><div class="miniTop"><b>성막 동선</b><button id="miniClose">×</button></div><div id="miniList"></div></div>
   </main>
 </div>
 <script src="data/scenes.js"></script>
 <script src="js/explorer.js"></script>
-<script>
-if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
-</script>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}</script>
 </body>
 </html>
