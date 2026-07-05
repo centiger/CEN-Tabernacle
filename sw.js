@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cen-tabernacle-v0.2.1';
+const CACHE_NAME = 'cen-tabernacle-v0.2.2';
 const ASSETS = [
   './','./index.html','./style.css','./app.js','./manifest.json','./db/data.js',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
