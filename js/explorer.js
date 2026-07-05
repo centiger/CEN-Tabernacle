@@ -2,13 +2,13 @@
 const places=window.CEN_PLACES; const OVERVIEW=window.CEN_OVERVIEW; const $=id=>document.getElementById(id);
 const st={idx:0,mode:'far',scale:1,x:0,y:0,tab:'summary',sheet:false,ui:true,tools:false,pointers:new Map(),lastDist:0,lastCenter:null,lastTap:0,dragged:false,uiTimer:null};
 const el={intro:$('intro'),start:$('startBtn'),explorer:$('explorer'),stage:$('stage'),img:$('sceneImg'),labels:$('labels'),hint:$('sceneHint'),home:$('homeBtn'),mini:$('miniBtn'),miniBox:$('miniMap'),miniClose:$('miniClose'),miniList:$('miniList'),prev:$('prevBtn'),next:$('nextBtn'),tools:$('quickTools'),toolToggle:$('toolToggle'),far:$('farBtn'),mid:$('midBtn'),near:$('nearBtn'),plus:$('plusBtn'),minus:$('minusBtn'),sheet:$('sheet'),handle:$('sheetHandle'),section:$('sectionText'),title:$('titleText'),placeIcon:$('placeIcon'),placeTitle:$('placeTitle'),placeOne:$('placeOne'),tabText:$('tabText'),path:$('pathBar')};
-const place=()=>places[st.idx]; const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const place=()=>places[st.idx]; const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)); const isInterior=()=>['sanctuary','ark'].includes(place().id);
 function imageFor(){return (st.mode==='far'||st.mode==='mid')?OVERVIEW:place().image;}
 function baseFor(){
   if(st.mode==='far') return {s:1,x:0,y:0};
   if(st.mode==='mid'){
     const p=place();
-    return {s:innerWidth<700?1.32:1.22,x:(50-p.x)*innerWidth*.009,y:(50-p.y)*innerHeight*.009};
+    return {s:isInterior()?(innerWidth<700?1.04:1.02):(innerWidth<700?1.24:1.16),x:isInterior()?0:(50-p.x)*innerWidth*.007,y:isInterior()?0:(50-p.y)*innerHeight*.007};
   }
   return {s:1,x:0,y:0};
 }
@@ -23,7 +23,7 @@ function apply(anim=false){
 }
 function setImage(){
   const src=imageFor(); if(el.img.getAttribute('src')!==src){el.img.style.opacity=.16;el.img.onload=()=>{el.img.style.opacity=1};el.img.src=src;}
-  ['far','mid','near'].forEach(m=>el.stage.classList.toggle(m,st.mode===m));
+  ['far','mid','near'].forEach(m=>el.stage.classList.toggle(m,st.mode===m)); el.stage.classList.toggle('interior', isInterior());
 }
 function modeName(){return st.mode==='far'?'전체 조망':st.mode==='mid'?'한걸음 보기':'근접 보기';}
 function showUI(auto=true){
@@ -42,10 +42,7 @@ function render(){
   el.far.classList.toggle('active',st.mode==='far'); el.mid.classList.toggle('active',st.mode==='mid'); el.near.classList.toggle('active',st.mode==='near');
   el.tools.classList.toggle('collapsed',!st.tools);
 }
-function renderLabels(){
-  el.labels.innerHTML=places.map((p,i)=>`<button class="label ${i===st.idx?'active':''}" data-i="${i}" style="left:${p.x}%;top:${p.y}%">${p.icon} ${p.title}${i===st.idx?`<small>${modeName()}</small>`:''}</button>`).join('');
-  el.labels.querySelectorAll('.label').forEach(b=>b.onclick=e=>{e.stopPropagation();const i=+b.dataset.i; const next=(i===st.idx&&st.mode==='mid')?'near':'mid'; goTo(i,next,true)});
-}
+function renderLabels(){ el.labels.innerHTML=''; }
 function renderPath(){
   el.path.innerHTML=places.map((p,i)=>`<button class="pathItem ${i===st.idx?'active':''}" data-i="${i}"><span class="ico">${p.icon}</span><span>${p.title.replace('언약궤와 ','')}</span></button>`).join('');
   el.path.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();goTo(+b.dataset.i,'mid',true)});
@@ -66,6 +63,9 @@ function distance(a,b){return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY
 el.stage.addEventListener('pointerdown',e=>{el.stage.setPointerCapture(e.pointerId);st.pointers.set(e.pointerId,e);st.dragged=false;showUI(true);const now=Date.now();if(now-st.lastTap<290&&st.pointers.size===1){if(st.mode==='far')toMid();else if(st.mode==='mid')toNear();else if(st.scale<1.9){st.scale=2.2;apply(true)}else{st.scale=1;st.x=0;st.y=0;apply(true)}st.lastTap=0}else st.lastTap=now;});
 el.stage.addEventListener('pointermove',e=>{if(!st.pointers.has(e.pointerId))return;const prev=st.pointers.get(e.pointerId);st.pointers.set(e.pointerId,e);const pts=[...st.pointers.values()];if(pts.length===1&&st.scale>1.01){const dx=e.clientX-prev.clientX,dy=e.clientY-prev.clientY;if(Math.abs(dx)+Math.abs(dy)>2)st.dragged=true;st.x+=dx;st.y+=dy;apply(false)}else if(pts.length>=2){const[a,b]=pts,d=distance(a,b),c=center(a,b);st.dragged=true;if(!st.lastDist){st.lastDist=d;st.lastCenter=c;return}const factor=d/st.lastDist;st.scale=clamp(st.scale*factor,minScale(),maxScale());if(st.lastCenter){st.x+=c.x-st.lastCenter.x;st.y+=c.y-st.lastCenter.y}st.lastDist=d;st.lastCenter=c;apply(false)}});
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>el.stage.addEventListener(ev,e=>{st.pointers.delete(e.pointerId);if(st.pointers.size<2){st.lastDist=0;st.lastCenter=null}}));
+
+el.stage.addEventListener('click',e=>{ if(st.dragged) return; if(st.ui && !st.sheet && !st.tools && el.miniBox.classList.contains('hidden')){ hideUI(); } else { showUI(true); } });
+
 window.addEventListener('popstate',()=>{if(!el.miniBox.classList.contains('hidden')){el.miniBox.classList.add('hidden');history.pushState({cen:1},'');return}if(st.tools){st.tools=false;render();history.pushState({cen:1},'');return}if(st.sheet){st.sheet=false;el.sheet.classList.add('collapsed');history.pushState({cen:1},'');return}if(st.mode==='near'){toMid();history.pushState({cen:1},'');return}if(st.mode==='mid'){toFar();history.pushState({cen:1},'');return}if(st.idx!==0){goTo(0,'far');history.pushState({cen:1},'');return}el.intro.classList.remove('hidden');el.explorer.classList.add('hidden');});
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{st.tab=b.dataset.tab;renderTab();showUI(false)});
 el.start.onclick=()=>{el.intro.classList.add('hidden');el.explorer.classList.remove('hidden');history.replaceState({cen:1},'');history.pushState({cen:2},'');goTo(0,'far');flash('전체 조망에서 시작합니다. 원하는 장소를 터치하세요.');};
