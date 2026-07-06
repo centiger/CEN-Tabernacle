@@ -19,6 +19,14 @@
 
 /* CEN Temple Explorer v1.0 home menu */
 .home{position:fixed;inset:0;z-index:100;background:#050302;color:var(--text);overflow:auto;touch-action:auto}.home.hidden{display:none}.homeBg{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.88)),url('assets/icons/images/flow-bg.jpg') center/cover no-repeat;filter:saturate(1.04) contrast(1.02)}.homeInner{position:relative;z-index:1;min-height:100%;padding:calc(env(safe-area-inset-top) + 34px) 16px calc(env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column;justify-content:center;gap:12px}.homeKicker{color:#e2c08b;font-weight:950;letter-spacing:.04em;text-align:center}.home h1{margin:0;text-align:center;font-size:34px;line-height:1.05}.home p{margin:0 0 16px;text-align:center;color:#e6d3b2;font-weight:800}.templeCards{display:grid;gap:12px;max-width:720px;width:100%;margin:0 auto}.templeCard{height:128px;border:1px solid rgba(255,224,168,.24);border-radius:28px;background-size:cover;background-position:center;color:#fff;text-align:left;padding:18px 20px;box-shadow:0 18px 44px rgba(0,0,0,.38);display:grid;grid-template-columns:46px 1fr;grid-template-rows:auto auto;column-gap:12px;align-content:end}.templeCard span{grid-row:1/3;font-size:34px;align-self:center}.templeCard b{font-size:24px;line-height:1.05;text-shadow:0 4px 16px #000}.templeCard em{font-style:normal;color:#ead7b8;font-weight:800;font-size:13px;line-height:1.3}.path{overflow-x:auto;grid-template-columns:repeat(5,1fr)}.path button span:last-child{white-space:nowrap}@media(max-width:480px){.home h1{font-size:31px}.templeCard{height:116px;border-radius:24px}.templeCard b{font-size:22px}.templeCard em{font-size:12px}.path{grid-auto-columns:minmax(70px,1fr)}}
+
+/* v1.0.1 bottom navigation touch fix */
+.top{z-index:50}
+.dock{z-index:60}
+.sheet{z-index:40}
+.miniPanel{z-index:70}
+.dock,.dock *{pointer-events:auto!important}
+.path button{touch-action:manipulation;cursor:pointer}
 </style>
 </head>
 <body>
@@ -81,6 +89,18 @@ const collections = {
     ]
   }
 };
+
+// Temple viewport presets: 같은 초고해상도 이미지 안에서 장면별 카메라 위치만 이동
+Object.values(collections).forEach(c=>{
+  c.scenes.forEach((scene,i)=>{
+    if(scene.img && scene.img.includes('stage-temple.jpg')){
+      const denom=Math.max(1,c.scenes.length-1);
+      scene.vx = scene.vx ?? (0.18 + 0.64*(i/denom));
+      scene.vy = scene.vy ?? 0.54;
+      scene.vs = scene.vs ?? 1.55;
+    }
+  });
+});
 let currentKey='tabernacle',scenes=collections[currentKey].scenes,idx=0,imgW=0,imgH=0,scale=1,minScale=1,maxScale=5,x=0,y=0,uiVisible=true,tab='overview';
 const app=document.getElementById('app'),stage=document.getElementById('stage'),img=document.getElementById('sceneImg'),title=document.getElementById('title'),zone=document.getElementById('zone'),path=document.getElementById('path'),sheet=document.getElementById('sheet'),sheetTitle=document.getElementById('sheetTitle'),sheetSub=document.getElementById('sheetSub'),sheetIcon=document.getElementById('sheetIcon'),tabText=document.getElementById('tabText'),mini=document.getElementById('mini');
 function injectHome(){
@@ -100,7 +120,24 @@ function openCollection(key){
   mini.querySelector('img').src=scenes[0].img;buildPath();go(0,'whole');showUI();
   history.pushState({collection:key},'',`#${key}`);
 }
-function buildPath(){path.style.gridTemplateColumns=`repeat(${Math.min(scenes.length,8)},1fr)`;path.innerHTML=scenes.map((s,i)=>`<button data-i="${i}"><span class="ico">${s.icon}</span><span>${s.title}</span></button>`).join('');path.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();go(+b.dataset.i,'step')});}
+function buildPath(){
+  path.style.gridTemplateColumns=`repeat(${Math.min(scenes.length,8)},1fr)`;
+  path.innerHTML=scenes.map((s,i)=>`<button type="button" data-i="${i}"><span class="ico">${s.icon}</span><span>${s.title}</span></button>`).join('');
+  path.querySelectorAll('button').forEach(b=>{
+    let last=0;
+    const activate=e=>{
+      if(e){e.preventDefault();e.stopPropagation();}
+      const now=Date.now();
+      if(now-last<220)return;
+      last=now;
+      go(+b.dataset.i,'step');
+      showUI();
+    };
+    b.addEventListener('pointerup',activate,{passive:false});
+    b.addEventListener('click',activate,{passive:false});
+    b.addEventListener('touchend',activate,{passive:false});
+  });
+}
 function setActive(){path.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===idx));const s=scenes[idx],c=collections[currentKey];title.textContent=s.title;zone.textContent=c.title+' · '+s.zone;sheetIcon.textContent=s.icon;sheetTitle.textContent=s.title;sheetSub.textContent=s.sub;tabText.textContent=s[tab];document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));}
 function fitContain(){const r=stage.getBoundingClientRect();return Math.min(r.width/imgW,r.height/imgH)}
 function fitCover(){const r=stage.getBoundingClientRect();return Math.max(r.width/imgW,r.height/imgH)}
@@ -109,7 +146,15 @@ function apply(){clamp();img.style.width=imgW+'px';img.style.height=imgH+'px';im
 function setScale(ns,cx=innerWidth/2,cy=innerHeight/2){const old=scale;scale=Math.min(maxScale,Math.max(minScale,ns));x=cx-(cx-x)*(scale/old);y=cy-(cy-y)*(scale/old);apply();}
 function whole(){scale=fitContain();minScale=scale;x=(stage.clientWidth-imgW*scale)/2;y=(stage.clientHeight-imgH*scale)/2;apply();showUI();}
 function step(){minScale=fitContain();scale=Math.max(fitCover(),minScale);x=(stage.clientWidth-imgW*scale)/2;y=(stage.clientHeight-imgH*scale)/2;apply();showUI();}
-function go(i,mode='step'){idx=(i+scenes.length)%scenes.length;const s=scenes[idx];img.onload=()=>{imgW=img.naturalWidth;imgH=img.naturalHeight;maxScale=Math.max(4,fitContain()*6);mode==='whole'?whole():step();setActive();};img.src=s.img;history.replaceState({collection:currentKey,idx},'',`#${currentKey}-${s.id}`);setActive();}
+function focusScene(s){
+  minScale=fitContain();
+  scale=Math.max(fitCover()*(s.vs||1.45),minScale);
+  const cx=imgW*(s.vx||0.5), cy=imgH*(s.vy||0.5);
+  x=stage.clientWidth/2-cx*scale;
+  y=stage.clientHeight/2-cy*scale;
+  apply();showUI();
+}
+function go(i,mode='step'){idx=(i+scenes.length)%scenes.length;const s=scenes[idx];img.onload=()=>{imgW=img.naturalWidth;imgH=img.naturalHeight;maxScale=Math.max(4,fitContain()*6);mode==='whole'?whole():(s.img&&s.img.includes('stage-temple.jpg')?focusScene(s):step());setActive();};img.src=s.img;history.replaceState({collection:currentKey,idx},'',`#${currentKey}-${s.id}`);setActive();}
 function showUI(){uiVisible=true;app.classList.remove('clean');}
 function hideUI(){if(sheet.classList.contains('open')||mini.classList.contains('open'))return;uiVisible=false;app.classList.add('clean');}
 function toggleUI(){uiVisible?hideUI():showUI();}
