@@ -1,4 +1,4 @@
-const CACHE='cen-temple-explorer-v1.0.4';
+const CACHE='cen-temple-explorer-v1.0.5';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./assets/icons/images/stage-temple.jpg','./assets/icons/images/card-tabernacle.jpg','./assets/icons/images/card-solomon.jpg','./assets/icons/images/card-zerubbabel.jpg','./assets/icons/images/card-herod.jpg','./assets/icons/images/solomon/drone.jpg','./assets/icons/images/solomon/whole.jpg','./assets/icons/images/solomon/court.jpg','./assets/icons/images/solomon/altar.jpg','./assets/icons/images/solomon/sea.jpg','./assets/icons/images/solomon/holy.jpg','./assets/icons/images/solomon/mostholy.jpg','./assets/icons/images/solomon/ark.jpg','./scene/overview.jpg','./scene/entry.jpg','./scene/altar.jpg','./scene/laver.jpg','./scene/sanctuary.jpg','./scene/ark.jpg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
