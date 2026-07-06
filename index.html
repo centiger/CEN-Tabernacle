@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#080503">
-<title>CEN Tabernacle v2.1.0</title>
+<title>CEN Temple Explorer v1.0</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--gold:#c89432;--panel:rgba(11,7,4,.72);--line:rgba(255,224,168,.24);--text:#fff7e8;--muted:#d8c8ad}
@@ -16,6 +16,9 @@
 .sheet{bottom:calc(env(safe-area-inset-bottom) + 112px);}
 .app.clean .top,.app.clean .dock,.app.clean .sheet,.app.clean .miniPanel{opacity:0;pointer-events:none}
 .stage{cursor:grab}.stage:active{cursor:grabbing}
+
+/* CEN Temple Explorer v1.0 home menu */
+.home{position:fixed;inset:0;z-index:100;background:#050302;color:var(--text);overflow:auto;touch-action:auto}.home.hidden{display:none}.homeBg{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.88)),url('assets/icons/images/flow-bg.jpg') center/cover no-repeat;filter:saturate(1.04) contrast(1.02)}.homeInner{position:relative;z-index:1;min-height:100%;padding:calc(env(safe-area-inset-top) + 34px) 16px calc(env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column;justify-content:center;gap:12px}.homeKicker{color:#e2c08b;font-weight:950;letter-spacing:.04em;text-align:center}.home h1{margin:0;text-align:center;font-size:34px;line-height:1.05}.home p{margin:0 0 16px;text-align:center;color:#e6d3b2;font-weight:800}.templeCards{display:grid;gap:12px;max-width:720px;width:100%;margin:0 auto}.templeCard{height:128px;border:1px solid rgba(255,224,168,.24);border-radius:28px;background-size:cover;background-position:center;color:#fff;text-align:left;padding:18px 20px;box-shadow:0 18px 44px rgba(0,0,0,.38);display:grid;grid-template-columns:46px 1fr;grid-template-rows:auto auto;column-gap:12px;align-content:end}.templeCard span{grid-row:1/3;font-size:34px;align-self:center}.templeCard b{font-size:24px;line-height:1.05;text-shadow:0 4px 16px #000}.templeCard em{font-style:normal;color:#ead7b8;font-weight:800;font-size:13px;line-height:1.3}.path{overflow-x:auto;grid-template-columns:repeat(5,1fr)}.path button span:last-child{white-space:nowrap}@media(max-width:480px){.home h1{font-size:31px}.templeCard{height:116px;border-radius:24px}.templeCard b{font-size:22px}.templeCard em{font-size:12px}.path{grid-auto-columns:minmax(70px,1fr)}}
 </style>
 </head>
 <body>
@@ -30,17 +33,75 @@
   <div id="toast" class="toast"></div><div id="hint" class="hint"></div>
 </div>
 <script>
-const scenes=[
-{id:'entry',icon:'🚪',title:'입구',zone:'바깥뜰',img:'scene/entry.jpg',sub:'성막으로 들어가는 유일한 문입니다.',overview:'성막 탐험은 입구에서 시작합니다. 하단 버튼으로 순서대로 이동하거나, 이미지를 확대해 직접 살펴볼 수 있습니다.',bible:'출애굽기 27:16',meaning:'하나님께 나아가는 길이 임의가 아니라 정해진 길을 통해 열린다는 것을 보여줍니다.'},
-{id:'altar',icon:'🔥',title:'번제단',zone:'바깥뜰',img:'scene/altar.jpg',sub:'희생 제물이 드려지는 바깥뜰의 중심 기구',overview:'성막에 들어와 가장 먼저 마주하는 기구입니다. 제사가 드려지는 자리입니다.',bible:'출애굽기 27:1-8',meaning:'하나님께 나아가기 전 죄와 희생의 문제를 먼저 마주하게 합니다.'},
-{id:'laver',icon:'💧',title:'물두멍',zone:'바깥뜰',img:'scene/laver.jpg',sub:'제사장이 손과 발을 씻는 정결의 장소',overview:'번제단과 성소 사이에 놓인 물두멍입니다. 제사장은 성소에 들어가기 전 이곳에서 씻었습니다.',bible:'출애굽기 30:18-21',meaning:'섬김과 예배 앞에 필요한 정결을 보여줍니다.'},
-{id:'sanctuary',icon:'🕎',title:'성소',zone:'성막 내부',img:'scene/sanctuary.jpg',sub:'떡상, 금 등잔대, 분향단이 있는 섬김의 공간',overview:'성소 안에는 떡상, 금 등잔대, 분향단이 있습니다. 한 장의 이미지 안을 확대하고 좌우로 움직이며 살펴보세요.',bible:'출애굽기 25:23-40, 30:1-10',meaning:'하나님 앞에서 드려지는 지속적인 섬김과 임재의 빛을 보여줍니다.'},
-{id:'ark',icon:'📦',title:'언약궤',zone:'지성소',img:'scene/ark.jpg',sub:'속죄소와 그룹 아래에 있는 가장 거룩한 기구',overview:'지성소의 중심은 언약궤입니다. 그룹은 서로 마주하고 날개는 속죄소를 덮는 형태로 이해합니다.',bible:'출애굽기 25:10-22, 레위기 16:2',meaning:'하나님의 임재와 속죄의 은혜를 상징하는 중심 기구입니다.'}
-];
-let idx=0,imgW=0,imgH=0,scale=1,minScale=1,maxScale=5,x=0,y=0,uiVisible=true,hideTimer=null,tab='overview';
-const app=document.getElementById('app'),stage=document.getElementById('stage'),img=document.getElementById('sceneImg'),title=document.getElementById('title'),zone=document.getElementById('zone'),path=document.getElementById('path'),sheet=document.getElementById('sheet'),sheetTitle=document.getElementById('sheetTitle'),sheetSub=document.getElementById('sheetSub'),sheetIcon=document.getElementById('sheetIcon'),tabText=document.getElementById('tabText'),toast=document.getElementById('toast'),mini=document.getElementById('mini'),hint=document.getElementById('hint');
-function buildPath(){path.innerHTML=scenes.map((s,i)=>`<button data-i="${i}"><span class="ico">${s.icon}</span><span>${s.title}</span></button>`).join('');path.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();go(+b.dataset.i,'step')});}
-function setActive(){path.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===idx));const s=scenes[idx];title.textContent=s.title;zone.textContent=s.zone;sheetIcon.textContent=s.icon;sheetTitle.textContent=s.title;sheetSub.textContent=s.sub;tabText.textContent=s[tab];document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));}
+const collections = {
+  tabernacle: {
+    id: 'tabernacle', icon: '⛺', title: '성막', subtitle: '광야에서 하나님 임재를 경험한 이동식 성소', card: 'assets/icons/images/card-tabernacle.jpg',
+    scenes: [
+      {id:'entry',icon:'🚪',title:'입구',zone:'바깥뜰',img:'scene/entry.jpg',sub:'성막으로 들어가는 유일한 문입니다.',overview:'성막 탐험은 입구에서 시작합니다. 하단 버튼으로 순서대로 이동하거나, 이미지를 확대해 직접 살펴볼 수 있습니다.',bible:'출애굽기 27:16',meaning:'하나님께 나아가는 길이 임의가 아니라 정해진 길을 통해 열린다는 것을 보여줍니다.'},
+      {id:'altar',icon:'🔥',title:'번제단',zone:'바깥뜰',img:'scene/altar.jpg',sub:'희생 제물이 드려지는 바깥뜰의 중심 기구',overview:'성막에 들어와 가장 먼저 마주하는 기구입니다. 제사가 드려지는 자리입니다.',bible:'출애굽기 27:1-8',meaning:'하나님께 나아가기 전 죄와 희생의 문제를 먼저 마주하게 합니다.'},
+      {id:'laver',icon:'💧',title:'물두멍',zone:'바깥뜰',img:'scene/laver.jpg',sub:'제사장이 손과 발을 씻는 정결의 장소',overview:'번제단과 성소 사이에 놓인 물두멍입니다. 제사장은 성소에 들어가기 전 이곳에서 씻었습니다.',bible:'출애굽기 30:18-21',meaning:'섬김과 예배 앞에 필요한 정결을 보여줍니다.'},
+      {id:'sanctuary',icon:'🕎',title:'성소',zone:'성막 내부',img:'scene/sanctuary.jpg',sub:'떡상, 금 등잔대, 분향단이 있는 섬김의 공간',overview:'성소 안에는 떡상, 금 등잔대, 분향단이 있습니다. 한 장의 이미지 안을 확대하고 좌우로 움직이며 살펴보세요.',bible:'출애굽기 25:23-40, 30:1-10',meaning:'하나님 앞에서 드려지는 지속적인 섬김과 임재의 빛을 보여줍니다.'},
+      {id:'ark',icon:'📦',title:'언약궤',zone:'지성소',img:'scene/ark.jpg',sub:'속죄소와 그룹 아래에 있는 가장 거룩한 기구',overview:'지성소의 중심은 언약궤입니다. 그룹은 서로 마주하고 날개는 속죄소를 덮는 형태로 이해합니다.',bible:'출애굽기 25:10-22, 레위기 16:2',meaning:'하나님의 임재와 속죄의 은혜를 상징하는 중심 기구입니다.'}
+    ]
+  },
+  solomon: {
+    id: 'solomon', icon: '🏛️', title: '솔로몬 성전', subtitle: '왕국 시대 예루살렘에 세워진 첫 성전', card: 'assets/icons/images/card-solomon.jpg',
+    scenes: [
+      {id:'drone',icon:'🦅',title:'드론뷰',zone:'솔로몬 성전',img:'assets/icons/images/stage-temple.jpg',sub:'성전 전체 구조를 한눈에 보는 시작 화면',overview:'솔로몬 성전 탐험은 전체 조망에서 시작합니다. 성전 건물, 뜰, 제사 공간의 방향과 배치를 먼저 파악합니다.',bible:'열왕기상 6:1, 역대하 3:1',meaning:'성전은 왕국의 권위를 과시하는 궁전이 아니라, 하나님의 이름을 두신 예배 중심 공간입니다.'},
+      {id:'overview',icon:'🏛️',title:'성전 전체',zone:'솔로몬 성전',img:'assets/icons/images/stage-temple.jpg',sub:'낭실·성소·지성소로 이어지는 성전 본체',overview:'솔로몬 성전은 낭실, 성소, 지성소가 이어지는 구조입니다. 성막의 기본 질서를 더 고정적이고 장엄한 건축으로 확장한 형태입니다.',bible:'열왕기상 6:2-3',meaning:'이동식 성막에서 고정된 성전으로 넘어가며, 이스라엘 예배의 중심이 예루살렘에 자리 잡습니다.'},
+      {id:'outercourt',icon:'🌿',title:'바깥뜰',zone:'성전 뜰',img:'assets/icons/images/stage-temple.jpg',sub:'백성과 제사 활동이 만나는 성전의 외부 공간',overview:'바깥뜰은 성전 본체 앞에 펼쳐진 예배 공간입니다. 제사와 정결 의식이 성전 입구 앞에서 이루어졌습니다.',bible:'역대하 4:9',meaning:'하나님께 나아가는 예배는 성전 안쪽만이 아니라 뜰에서부터 시작됩니다.'},
+      {id:'altar',icon:'🔥',title:'번제단',zone:'성전 뜰',img:'assets/icons/images/stage-temple.jpg',sub:'희생 제사가 드려지는 성전 앞뜰의 중심',overview:'솔로몬 성전의 놋 제단은 성전 앞에 놓였습니다. 번제와 화목제 등 제사 행위의 중심 자리입니다.',bible:'역대하 4:1',meaning:'성전으로 나아가는 길은 희생과 속죄를 통과합니다. 멋있는 건물보다 제단이 먼저입니다.'},
+      {id:'sea',icon:'🌊',title:'놋바다',zone:'성전 뜰',img:'assets/icons/images/stage-temple.jpg',sub:'제사장의 정결을 위한 큰 물두멍',overview:'놋바다는 열두 소 형상 위에 놓인 큰 물그릇으로 설명됩니다. 제사장들이 씻는 정결의 기능을 담당했습니다.',bible:'열왕기상 7:23-26, 역대하 4:2-6',meaning:'예배의 장엄함보다 먼저 필요한 것은 정결입니다. 물 없이 성소로 직행하면 안 됩니다. 성전판 손 씻기, 꽤 엄격합니다.'},
+      {id:'holy',icon:'🕎',title:'성소',zone:'성전 내부',img:'assets/icons/images/stage-temple.jpg',sub:'등잔대, 떡상, 분향단이 놓인 섬김의 공간',overview:'성소는 제사장이 하나님 앞에서 섬기는 공간입니다. 등잔대, 떡상, 분향단이 성막의 질서를 이어받아 배치됩니다.',bible:'열왕기상 6:17, 역대하 4:7-8, 19-22',meaning:'성소는 일회성 감동의 공간이 아니라 지속적인 섬김, 빛, 기도, 교제를 보여주는 공간입니다.'},
+      {id:'mostholy',icon:'✨',title:'지성소',zone:'성전 내부',img:'assets/icons/images/stage-temple.jpg',sub:'하나님의 임재를 상징하는 가장 거룩한 방',overview:'지성소는 성전 가장 안쪽에 위치한 공간입니다. 성소와 구분되며 언약궤가 놓이는 가장 거룩한 자리입니다.',bible:'열왕기상 6:16, 19-20',meaning:'성전의 중심은 크기나 금 장식이 아니라 하나님의 임재입니다.'},
+      {id:'ark',icon:'📦',title:'언약궤',zone:'지성소',img:'assets/icons/images/stage-temple.jpg',sub:'언약과 속죄, 임재를 상징하는 중심 기구',overview:'솔로몬은 지성소에 언약궤를 모셨고, 두 그룹의 날개가 궤 위를 덮는 구조로 설명됩니다.',bible:'열왕기상 8:6-11, 역대하 5:7-14',meaning:'언약궤는 성전의 종착점입니다. 사용자는 여기서 건축물이 아니라 언약과 임재를 기억해야 합니다.'}
+    ]
+  },
+  zerubbabel: {
+    id: 'zerubbabel', icon: '🧱', title: '스룹바벨 성전', subtitle: '포로 귀환 후 다시 세워진 예배 회복의 성전', card: 'assets/icons/images/card-zerubbabel.jpg',
+    scenes: [
+      {id:'drone',icon:'🦅',title:'드론뷰',zone:'스룹바벨 성전',img:'assets/icons/images/stage-temple.jpg',sub:'재건된 성전의 전체 흐름을 보는 화면',overview:'스룹바벨 성전은 포로 귀환 이후 무너진 예배를 다시 세운 회복의 성전입니다.',bible:'에스라 3:8-13',meaning:'화려함보다 중요한 것은 다시 예배가 시작되었다는 사실입니다.'},
+      {id:'overview',icon:'🏛️',title:'성전 전체',zone:'스룹바벨 성전',img:'assets/icons/images/stage-temple.jpg',sub:'이전 영광보다 회복의 의미가 큰 성전',overview:'솔로몬 성전과 비교하면 초라하게 보였지만, 예배 회복의 상징으로 매우 중요합니다.',bible:'학개 2:3-9',meaning:'작아 보여도 다시 시작하는 예배는 작지 않습니다.'},
+      {id:'outercourt',icon:'🌿',title:'바깥뜰',zone:'성전 뜰',img:'assets/icons/images/stage-temple.jpg',sub:'귀환 공동체가 다시 모인 예배 공간',overview:'성전 뜰은 귀환 공동체가 다시 하나님 앞에 서는 공간입니다.',bible:'에스라 6:16-18',meaning:'공동체의 회복은 공간의 회복과 함께 진행됩니다.'},
+      {id:'altar',icon:'🔥',title:'번제단',zone:'성전 뜰',img:'assets/icons/images/stage-temple.jpg',sub:'성전 완공 전 먼저 회복된 제단',overview:'귀환 공동체는 성전 공사보다 먼저 제단을 세우고 번제를 드렸습니다.',bible:'에스라 3:2-6',meaning:'건물보다 예배가 먼저입니다. 이건 꽤 강한 원칙입니다.'},
+      {id:'holy',icon:'🕎',title:'성소',zone:'성전 내부',img:'assets/icons/images/stage-temple.jpg',sub:'회복된 성전의 섬김 공간',overview:'스룹바벨 성전의 내부 구조는 제한적으로 알려져 있지만, 성전 예배의 기본 질서를 회복한 공간으로 이해할 수 있습니다.',bible:'에스라 6:14-18',meaning:'불완전한 회복이라도 하나님께 드리는 예배는 다시 시작될 수 있습니다.'},
+      {id:'mostholy',icon:'✨',title:'지성소',zone:'성전 내부',img:'assets/icons/images/stage-temple.jpg',sub:'언약궤가 없는 시대의 가장 거룩한 공간',overview:'스룹바벨 성전에는 솔로몬 성전처럼 언약궤가 있었다고 보기 어렵습니다. 따라서 이 탐험에서는 언약궤 메뉴를 두지 않습니다.',bible:'예레미야 3:16',meaning:'없는 것을 있는 것처럼 꾸미지 않는 것이 교육적 정확성입니다. 여기서 뻥치면 앱이 아니라 판타지입니다.'}
+    ]
+  },
+  herod: {
+    id: 'herod', icon: '🏰', title: '헤롯 성전', subtitle: '예수님 시대의 거대한 성전산과 성전', card: 'assets/icons/images/card-herod.jpg',
+    scenes: [
+      {id:'templemount',icon:'🦅',title:'성전산',zone:'헤롯 성전',img:'assets/icons/images/stage-temple.jpg',sub:'예수님 시대 성전 전체를 보는 시작 화면',overview:'헤롯 성전 탐험은 성전산 전체에서 시작합니다. 넓은 플랫폼과 여러 뜰을 먼저 파악해야 합니다.',bible:'마태복음 24:1-2',meaning:'헤롯 성전은 웅장했지만, 복음서는 그 웅장함보다 참된 예배와 심판의 메시지를 더 강조합니다.'},
+      {id:'gentiles',icon:'🌍',title:'이방인의 뜰',zone:'성전산',img:'assets/icons/images/stage-temple.jpg',sub:'이방인도 접근할 수 있었던 가장 바깥 공간',overview:'이방인의 뜰은 성전산의 넓은 외부 구역입니다. 예수님이 성전 정화 사건을 일으키신 배경으로도 연결됩니다.',bible:'마가복음 11:15-17',meaning:'기도의 집이 장사와 형식의 공간으로 변질될 때 예수님의 강한 문제 제기가 등장합니다.'},
+      {id:'women',icon:'👥',title:'여인의 뜰',zone:'성전 내부 뜰',img:'assets/icons/images/stage-temple.jpg',sub:'유대인 남녀가 들어갈 수 있었던 주요 뜰',overview:'여인의 뜰은 성전 안쪽으로 들어가는 중요한 단계입니다. 헌금함과 가르침의 장면과도 연결해 이해할 수 있습니다.',bible:'누가복음 21:1-4',meaning:'성전의 크기보다 하나님 앞의 진실함이 더 중요합니다.'},
+      {id:'israel',icon:'🧍',title:'이스라엘 뜰',zone:'성전 내부 뜰',img:'assets/icons/images/stage-temple.jpg',sub:'이스라엘 남자들이 접근할 수 있었던 구역',overview:'이스라엘 뜰은 성전 본체와 제사장의 뜰에 더 가까운 공간입니다. 예배 질서의 단계성을 보여줍니다.',bible:'누가복음 1:9-10',meaning:'성전은 아무렇게나 드나드는 공간이 아니라 거룩의 질서가 있는 공간입니다.'},
+      {id:'priests',icon:'🔥',title:'제사장의 뜰',zone:'성전 내부 뜰',img:'assets/icons/images/stage-temple.jpg',sub:'제사장들이 제사를 섬기던 성전 중심 구역',overview:'제사장의 뜰에는 제단과 성전 본체가 가까이 놓입니다. 제사 활동의 중심 구역입니다.',bible:'히브리서 9:6',meaning:'반복되는 제사는 인간의 죄 문제가 반복적으로 다루어져야 했음을 보여줍니다.'},
+      {id:'holy',icon:'🕎',title:'성소',zone:'성전 본체',img:'assets/icons/images/stage-temple.jpg',sub:'제사장의 섬김이 이루어지는 성전 내부 공간',overview:'헤롯 성전의 성소는 예수님 시대 제사장 직무와 연결됩니다. 사가랴의 분향 장면도 이 성전 배경에서 이해할 수 있습니다.',bible:'누가복음 1:8-11',meaning:'성소는 하나님 앞에서 드려지는 기도와 섬김의 공간입니다.'},
+      {id:'mostholy',icon:'✨',title:'지성소',zone:'성전 본체',img:'assets/icons/images/stage-temple.jpg',sub:'대제사장만 제한적으로 들어가는 가장 거룩한 공간',overview:'지성소는 성전 가장 안쪽의 거룩한 공간입니다. 예수님의 죽음 때 성전 휘장이 찢어진 사건과 직접 연결됩니다.',bible:'마태복음 27:50-51, 히브리서 9:7-12',meaning:'휘장이 찢어진 사건은 하나님께 나아가는 길이 새롭게 열렸음을 보여줍니다.'}
+    ]
+  }
+};
+let currentKey='tabernacle',scenes=collections[currentKey].scenes,idx=0,imgW=0,imgH=0,scale=1,minScale=1,maxScale=5,x=0,y=0,uiVisible=true,tab='overview';
+const app=document.getElementById('app'),stage=document.getElementById('stage'),img=document.getElementById('sceneImg'),title=document.getElementById('title'),zone=document.getElementById('zone'),path=document.getElementById('path'),sheet=document.getElementById('sheet'),sheetTitle=document.getElementById('sheetTitle'),sheetSub=document.getElementById('sheetSub'),sheetIcon=document.getElementById('sheetIcon'),tabText=document.getElementById('tabText'),mini=document.getElementById('mini');
+function injectHome(){
+  const home=document.createElement('div');home.id='home';home.className='home';
+  home.innerHTML=`<div class="homeBg"></div><div class="homeInner"><div class="homeKicker">CEN Worship & Symbol</div><h1>성막·성전 탐험</h1><p>공간을 먼저 보고, 설명은 나중에 봅니다.</p><div id="templeCards" class="templeCards"></div></div>`;
+  document.body.appendChild(home);
+  const cards=home.querySelector('#templeCards');
+  Object.values(collections).forEach(c=>{
+    const card=document.createElement('button');card.className='templeCard';card.style.backgroundImage=`linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.72)),url('${c.card}')`;
+    card.innerHTML=`<span>${c.icon}</span><b>${c.title}</b><em>${c.subtitle}</em>`;
+    card.onclick=()=>openCollection(c.id);
+    cards.appendChild(card);
+  });
+}
+function openCollection(key){
+  currentKey=key;scenes=collections[key].scenes;idx=0;document.getElementById('home').classList.add('hidden');
+  mini.querySelector('img').src=scenes[0].img;buildPath();go(0,'whole');showUI();
+  history.pushState({collection:key},'',`#${key}`);
+}
+function buildPath(){path.style.gridTemplateColumns=`repeat(${Math.min(scenes.length,8)},1fr)`;path.innerHTML=scenes.map((s,i)=>`<button data-i="${i}"><span class="ico">${s.icon}</span><span>${s.title}</span></button>`).join('');path.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();go(+b.dataset.i,'step')});}
+function setActive(){path.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===idx));const s=scenes[idx],c=collections[currentKey];title.textContent=s.title;zone.textContent=c.title+' · '+s.zone;sheetIcon.textContent=s.icon;sheetTitle.textContent=s.title;sheetSub.textContent=s.sub;tabText.textContent=s[tab];document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));}
 function fitContain(){const r=stage.getBoundingClientRect();return Math.min(r.width/imgW,r.height/imgH)}
 function fitCover(){const r=stage.getBoundingClientRect();return Math.max(r.width/imgW,r.height/imgH)}
 function clamp(){const r=stage.getBoundingClientRect(),w=imgW*scale,h=imgH*scale;if(w<=r.width)x=(r.width-w)/2;else x=Math.min(0,Math.max(r.width-w,x));if(h<=r.height)y=(r.height-h)/2;else y=Math.min(0,Math.max(r.height-h,y));}
@@ -48,19 +109,29 @@ function apply(){clamp();img.style.width=imgW+'px';img.style.height=imgH+'px';im
 function setScale(ns,cx=innerWidth/2,cy=innerHeight/2){const old=scale;scale=Math.min(maxScale,Math.max(minScale,ns));x=cx-(cx-x)*(scale/old);y=cy-(cy-y)*(scale/old);apply();}
 function whole(){scale=fitContain();minScale=scale;x=(stage.clientWidth-imgW*scale)/2;y=(stage.clientHeight-imgH*scale)/2;apply();showUI();}
 function step(){minScale=fitContain();scale=Math.max(fitCover(),minScale);x=(stage.clientWidth-imgW*scale)/2;y=(stage.clientHeight-imgH*scale)/2;apply();showUI();}
-function go(i,mode='step'){idx=(i+scenes.length)%scenes.length;const s=scenes[idx];img.onload=()=>{imgW=img.naturalWidth;imgH=img.naturalHeight;maxScale=Math.max(4,fitContain()*6); mode==='whole'?whole():step(); setActive();};img.src=s.img;history.replaceState({idx},'',`#${s.id}`);setActive();}
-function showUI(){uiVisible=true;app.classList.remove('clean');clearTimeout(hideTimer)}
-function hideUI(){clearTimeout(hideTimer);if(sheet.classList.contains('open')||mini.classList.contains('open'))return;uiVisible=false;app.classList.add('clean')}
-function toggleUI(){clearTimeout(hideTimer);uiVisible?hideUI():showUI();}
-let pointers=new Map(),dragging=false,lastX=0,lastY=0,lastDist=0,lastScale=1,lastTap=0;
-let moved=false;
+function go(i,mode='step'){idx=(i+scenes.length)%scenes.length;const s=scenes[idx];img.onload=()=>{imgW=img.naturalWidth;imgH=img.naturalHeight;maxScale=Math.max(4,fitContain()*6);mode==='whole'?whole():step();setActive();};img.src=s.img;history.replaceState({collection:currentKey,idx},'',`#${currentKey}-${s.id}`);setActive();}
+function showUI(){uiVisible=true;app.classList.remove('clean');}
+function hideUI(){if(sheet.classList.contains('open')||mini.classList.contains('open'))return;uiVisible=false;app.classList.add('clean');}
+function toggleUI(){uiVisible?hideUI():showUI();}
+let pointers=new Map(),dragging=false,lastX=0,lastY=0,lastDist=0,lastScale=1,lastTap=0,moved=false;
 stage.addEventListener('pointerdown',e=>{stage.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=false;if(pointers.size===1){dragging=true;lastX=e.clientX;lastY=e.clientY}else if(pointers.size===2){const p=[...pointers.values()];lastDist=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);lastScale=scale;showUI();}});
 stage.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){moved=true;const p=[...pointers.values()],d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y),cx=(p[0].x+p[1].x)/2,cy=(p[0].y+p[1].y)/2;setScale(lastScale*(d/lastDist),cx,cy)}else if(dragging&&pointers.size===1){const dx=e.clientX-lastX,dy=e.clientY-lastY;if(Math.abs(dx)+Math.abs(dy)>3)moved=true;x+=dx;y+=dy;lastX=e.clientX;lastY=e.clientY;apply();}});
-function up(e){pointers.delete(e.pointerId);if(pointers.size<2)lastDist=0;if(pointers.size===0){dragging=false;const now=Date.now();if(!moved&&now-lastTap<280){scale<fitCover()*1.5?setScale(fitCover()*2,e.clientX,e.clientY):step();lastTap=0}else lastTap=now;}}stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
-document.getElementById('fitBtn').onclick=e=>{e.stopPropagation();whole()};document.getElementById('miniBtn').onclick=e=>{e.stopPropagation();mini.classList.toggle('open');showUI()};sheet.onclick=e=>{e.stopPropagation();sheet.classList.toggle('open');showUI()};document.querySelectorAll('.tabs button').forEach(b=>b.onclick=e=>{e.stopPropagation();tab=b.dataset.tab;setActive();sheet.classList.add('open');showUI()});stage.addEventListener('click',e=>{if(moved){moved=false;return;} if(e.target===stage||e.target===img)toggleUI()});window.addEventListener('resize',()=>step());function armBack(){history.replaceState({cen:true},'',location.href);history.pushState({cen:true,guard:true},'',location.href)}
-window.addEventListener('popstate',()=>{history.pushState({cen:true,guard:true},'',location.href);if(sheet.classList.contains('open')){sheet.classList.remove('open');showUI();return;}if(app.classList.contains('clean')){showUI();return;}if(scale>minScale*1.08){whole();return;}if(idx>0){go(idx-1,'whole');return;}showUI();});
+function up(e){pointers.delete(e.pointerId);if(pointers.size<2)lastDist=0;if(pointers.size===0){dragging=false;const now=Date.now();if(!moved&&now-lastTap<280){scale<fitCover()*1.5?setScale(fitCover()*2,e.clientX,e.clientY):step();lastTap=0}else lastTap=now;}}
+stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
+document.getElementById('fitBtn').onclick=e=>{e.stopPropagation();whole()};
+document.getElementById('miniBtn').onclick=e=>{e.stopPropagation();mini.classList.toggle('open');showUI()};
+sheet.onclick=e=>{e.stopPropagation();sheet.classList.toggle('open');showUI()};
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=e=>{e.stopPropagation();tab=b.dataset.tab;setActive();sheet.classList.add('open');showUI()});
+stage.addEventListener('click',e=>{if(moved){moved=false;return;}if(e.target===stage||e.target===img)toggleUI()});
+window.addEventListener('resize',()=>step());
+window.addEventListener('popstate',()=>{
+  if(!document.getElementById('home').classList.contains('hidden')){history.pushState({home:true},'',location.pathname);return;}
+  if(sheet.classList.contains('open')){sheet.classList.remove('open');showUI();history.pushState({collection:currentKey,idx},'',`#${currentKey}-${scenes[idx].id}`);return;}
+  if(app.classList.contains('clean')){showUI();history.pushState({collection:currentKey,idx},'',`#${currentKey}-${scenes[idx].id}`);return;}
+  document.getElementById('home').classList.remove('hidden');history.pushState({home:true},'',location.pathname);
+});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
-buildPath();go(0,'whole');armBack();
+injectHome();buildPath();go(0,'whole');history.replaceState({home:true},'',location.pathname);
 </script>
 </body>
 </html>
